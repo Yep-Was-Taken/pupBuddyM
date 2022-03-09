@@ -11,8 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.pupbuddym.ui.theme.PupBuddyMTheme
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 
 class MainActivity : ComponentActivity() {
+
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -26,6 +30,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
 }
 
