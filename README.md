@@ -1,0 +1,1 @@
+pupBuddy is now on Android! Use the app to track your walks and mark interesting points on your route.
