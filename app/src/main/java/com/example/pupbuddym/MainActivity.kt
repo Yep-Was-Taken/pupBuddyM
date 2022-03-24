@@ -3,6 +3,7 @@ package com.example.pupbuddym
 import android.Manifest
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,17 +45,28 @@ class MainActivity : ComponentActivity() {
         if (hasCameraPermission() == PERMISSION_GRANTED && hasExternalStoragePermission() == PERMISSION_GRANTED) {
             invokeCamera()
         } else {
-
+            requestMultiplePermissionsLauncher.launch(arrayOf(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
+            ))
         }
     }
 
     private val requestMultiplePermissionsLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         resultsMap ->
-        var permissionsGranted = false
+        var permissionGranted = false
         resultsMap.forEach {
             if (it.value == true) {
-
+                permissionGranted = it.value
+            } else {
+                permissionGranted = false
+                return@forEach
             }
+        }
+        if (permissionGranted) {
+            invokeCamera()
+        } else {
+            Toast.makeText(this, getString(R.string.cameraPermissionDenied), Toast.LENGTH_LONG).show()
         }
     }
 
