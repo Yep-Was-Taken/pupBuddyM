@@ -7,6 +7,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.content.pm.PackageManager
+import android.location.Location
+import android.os.Bundle
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,6 +29,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.app.ActivityCompat
+import com.example.pupbuddym.ui.theme.PupBuddyMTheme
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.Task
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
@@ -42,40 +51,41 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : ComponentActivity() {
-
+  
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var user: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     private var uri: Uri? = null
     private var currentImagePath: String = ""
     private var strUri by mutableStateOf("")
     val viewModel by viewModels<MainViewModel>()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            PupBuddyMTheme {
-                Column() {
-                    Row() {
-                        Greeting("Android")
-                        Button(
-                            onClick = { takePhoto() }
-                        ) {
-                            Text(text = "Photo")
-                        }
-                    }
-                    Row() {
-                        AsyncImage(model = strUri, contentDescription = "Dog image")
-                        Text(text = "Dog image")
-                    }
-                    Row() {
-                        Button(
-                            onClick = { signIn() }
-                        ) {
-                            Text(text = "Sign in")
-                        }
-                    }
-                }
+        setContentView(R.layout.activity_main)
+
+        Toast.makeText(applicationContext,"We did it",Toast.LENGTH_SHORT).show();
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
+        findViewById<Button>(R.id.btn_get_location).setOnClickListener {
+            fetchLocation()
+        }
+    }
+
+    private fun fetchLocation() {
+        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            {
+                ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 101)
+                return
+            }
+        fusedLocationProviderClient.lastLocation.addOnSuccessListener {
+            if(it != null){
+                Toast.makeText(applicationContext, "${it.latitude} ${it.longitude}", Toast.LENGTH_SHORT).show()
             }
         }
+
     }
 
     private fun signIn() {
@@ -206,4 +216,3 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
