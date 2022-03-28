@@ -1,43 +1,106 @@
 package com.example.pupbuddym
 
 import android.Manifest
+import android.content.ContentValues.TAG
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.lifecycle.ViewModelProvider
+import coil.compose.AsyncImage
+import com.example.pupbuddym.dto.Photo
+import com.example.pupbuddym.ui.main.MainViewModel
 import com.example.pupbuddym.ui.theme.PupBuddyMTheme
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
+import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : ComponentActivity() {
+
+    private var user: FirebaseUser? = FirebaseAuth.getInstance().currentUser
+    private var uri: Uri? = null
+    private var currentImagePath: String = ""
+    private var strUri by mutableStateOf("")
+    val viewModel by viewModels<MainViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             PupBuddyMTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    Greeting("Android")
-                }
-                Button(
-                    onClick = {
-                        takePhoto()
+                Column() {
+                    Row() {
+                        Greeting("Android")
+                        Button(
+                            onClick = { takePhoto() }
+                        ) {
+                            Text(text = "Photo")
+                        }
                     }
-                ) {
-                    Text(text = "Photo")
+                    Row() {
+                        AsyncImage(model = strUri, contentDescription = "Dog image")
+                        Text(text = "Dog image")
+                    }
+                    Row() {
+                        Button(
+                            onClick = { signIn() }
+                        ) {
+                            Text(text = "Sign in")
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    private fun signIn() {
+        val providers = arrayListOf(
+            AuthUI.IdpConfig.EmailBuilder().build()
+        )
+        val signInIntent = AuthUI.getInstance()
+            .createSignInIntentBuilder()
+            .setAvailableProviders(providers)
+            .build()
+        signInLauncher.launch(signInIntent)
+    }
+
+    private val signInLauncher = registerForActivityResult(
+        FirebaseAuthUIActivityResultContract()
+    ) {
+        res -> this.signInResult(res)
+    }
+
+    private fun signInResult(result: FirebaseAuthUIAuthenticationResult) {
+        val response = result.idpResponse
+        if (result.resultCode == RESULT_OK) {
+            user = FirebaseAuth.getInstance().currentUser
+        } else {
+            Log.e("MainActivity.kt", "Error logging in: " + response?.error?.errorCode)
         }
     }
 
@@ -71,7 +134,38 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun invokeCamera() {
-        TODO("Not yet implemented")
+        var file = createImageFile()
+        try {
+            uri = FileProvider.getUriForFile(this, "com.example.pupbuddym.fileprovider", file)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error: ${e.message}")
+            var foo = e.message
+        }
+        getCameraImage.launch(uri)
+    }
+
+    private fun createImageFile() : File {
+        val timestamp = SimpleDateFormat("yyyyMMdd_hhmmss").format(Date())
+        val imageDirectory = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile(
+            "Breadcrumb_${timestamp}",
+            ".jpg",
+            imageDirectory
+        ).apply {
+            currentImagePath = absolutePath
+        }
+    }
+
+    private val getCameraImage = registerForActivityResult(ActivityResultContracts.TakePicture()) {
+        success ->
+        if (success) {
+            Log.i(TAG, "Image location: $uri")
+            strUri = uri.toString()
+            val photo = Photo(localUri = uri.toString())
+            viewModel.photos.add(photo)
+        } else {
+            Log.e(TAG, "Image not saved. $uri")
+        }
     }
 
     fun hasCameraPermission() = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -85,8 +179,31 @@ class MainActivity : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun DefaultPreview() {
-        PupBuddyMTheme {
-            Greeting("Android")
+        Column() {
+            Row() {
+                Button(
+                    onClick = { signIn() }
+                ) {
+                    Text(text = "Sign in")
+                }
+            }
+            Row() {
+                Greeting("Roxie")
+                Button(
+                    onClick = {
+                        takePhoto()
+                    }
+                ) {
+                    Text(text = "Photo")
+                }
+            }
+            Row() {
+                AsyncImage(model = strUri, contentDescription = "Dog image")
+                Text(text = "Dog image")
+            }
+            Row() {
+                Text(text = "dog")
+            }
         }
     }
 }

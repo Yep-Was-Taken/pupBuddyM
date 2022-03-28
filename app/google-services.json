@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "199405272373",
+    "project_id": "pupbuddy-d3de7",
+    "storage_bucket": "pupbuddy-d3de7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:199405272373:android:969eff8c77573cbfd5a07c",
+        "android_client_info": {
+          "package_name": "com.example.pupbuddym"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "199405272373-ss4v1e51noe0s03cm4l8jl8b10qvrrsb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAboqhGZ0ybCCI16OHY-6q0mrIj8AVl1nY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "199405272373-ss4v1e51noe0s03cm4l8jl8b10qvrrsb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
