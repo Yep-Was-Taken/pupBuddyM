@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">pupBuddyM</string>
+    <string name="cameraPermissionDenied">Unable to load camera without permission.</string>
 </resources>
