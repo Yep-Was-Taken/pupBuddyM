@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.pupbuddym.dto.Dog
+import com.example.pupbuddym.dto.HotSpot
 import com.example.pupbuddym.dto.Photo
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -25,7 +26,7 @@ class MainViewModel : ViewModel() {
         listenToHouses()
     }
 
-    fun saveSpot(hotSpot: hotSpot){
+    fun saveSpot(hotSpot: HotSpot){
         val document = firestore.collection("hotSpot").document()
         hotSpot.hotSpotId = document.id
         val handle = document.set(hotSpot)

@@ -38,10 +38,10 @@
         android:layout_below="@+id/text"
         android:layout_alignParentStart="true"
         android:layout_centerInParent="true"
-        android:layout_marginStart="42dp"
-        android:layout_marginTop="654dp"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="607dp"
         android:background="#008080"
         android:fontFamily="@font/caveat_brush"
-        android:textSize="26sp"
-        android:text="Add" />
+        android:text="Add"
+        android:textSize="26sp" />
 </RelativeLayout>
