@@ -25,6 +25,15 @@ class MainViewModel : ViewModel() {
         listenToHouses()
     }
 
+    fun saveSpot(hotSpot: hotSpot){
+        val document = firestore.collection("hotSpot").document()
+        hotSpot.hotSpotId = document.id
+        val handle = document.set(hotSpot)
+        handle.addOnSuccessListener { Log.d("Firebase", "Document Saved") }
+        handle.addOnFailureListener { Log.d("Firebase", "Save failed $it") }
+    }
+
+
     /**
      * This will hear any updates from Firestore
      */
