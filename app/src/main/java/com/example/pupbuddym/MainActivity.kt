@@ -36,6 +36,7 @@ import com.example.pupbuddym.ui.main.MainViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
+import com.firebase.ui.auth.data.model.User
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
@@ -227,4 +228,5 @@ class MainActivity : ComponentActivity(), LocationListener {
             }
         }
     }
+
 }
