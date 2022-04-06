@@ -37,7 +37,6 @@ import com.example.pupbuddym.ui.main.MainViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.firebase.ui.auth.data.model.FirebaseAuthUIAuthenticationResult
-import com.firebase.ui.auth.data.model.User
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
@@ -72,6 +71,9 @@ class MainActivity : ComponentActivity(), LocationListener {
             getLocation()
         }
     }
+    fun setLatLong(lat: Double, long: Double): HotSpot {
+        return HotSpot("", lat, long)
+    }
 
     private fun getLocation() {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -83,8 +85,8 @@ class MainActivity : ComponentActivity(), LocationListener {
     override fun onLocationChanged(location: Location) {
         tvGpsLocation = findViewById(R.id.textView)
         tvGpsLocation.text = "Latitude: " + location.latitude + " , Longitude: " + location.longitude
-
-        saveSpot()
+        var docSaver = setLatLong(location.latitude, location.longitude)
+        viewModel.saveSpot(docSaver)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
