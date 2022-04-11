@@ -144,7 +144,7 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    internal var plants:MutableLiveData<ArrayList<Dog>>
+    internal var dogs:MutableLiveData<ArrayList<Dog>>
         get() {return _dogs}
         set(value) {_dogs = value}
 }

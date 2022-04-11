@@ -11,6 +11,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
@@ -59,6 +60,10 @@ class MainActivity : ComponentActivity() {
 
         findViewById<Button>(R.id.btn_get_location).setOnClickListener {
             fetchLocation()
+        }
+
+        setContent {
+            Login()
         }
     }
 
@@ -185,27 +190,42 @@ class MainActivity : ComponentActivity() {
         }
 
     fun hasCameraPermission() = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-    fun hasExternalStoragePermission() =
-        ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    fun hasExternalStoragePermission() = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     @Composable
     fun Greeting(name: String) {
         Text(text = "Hello $name!")
     }
 
-    @Preview(showBackground = true)
     @Composable
-    fun DefaultPreview() {
+    fun Login() {
+        Column() {
+            if (user == null) {
+                Row() {
+                    Button(
+                        onClick = { signIn() }
+                    ) {
+                        Text(text = "Sign in")
+                    }
+                }
+            } else {
+                Row() {
+                    Button(
+                        onClick = { }
+                    ) {
+                        Text(text = "Sign out")
+                    }
+                }
+                Photo()
+            }
+        }
+
+    }
+
+    @Composable
+    fun Photo() {
         Column() {
             Row() {
-                Button(
-                    onClick = { signIn() }
-                ) {
-                    Text(text = "Sign in")
-                }
-            }
-            Row() {
-                Greeting("Roxie")
                 Button(
                     onClick = {
                         takePhoto()
