@@ -1,6 +1,7 @@
 package com.example.pupbuddym
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
@@ -49,6 +50,7 @@ class MainActivity : ComponentActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private lateinit var tvGpsLocation: TextView
     private val locationPermissionCode = 2
+    private lateinit var gpsButton: Button
 
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var user: FirebaseUser? = FirebaseAuth.getInstance().currentUser
@@ -57,55 +59,23 @@ class MainActivity : ComponentActivity(), LocationListener {
     private var strUri by mutableStateOf("")
     val viewModel by viewModels<MainViewModel>()
 
-    var latitudeString = resources.getString(R.string.latitude)
-    var longitudeString = resources.getString(R.string.longitude)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Toast.makeText(applicationContext, "We did it", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "We did it", Toast.LENGTH_SHORT).show();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-        val gpsButton: Button = findViewById(R.id.getLocationButton)
+        gpsButton = findViewById(R.id.getLocationButton)
         gpsButton.setOnClickListener {
-            getLocation()
-        }
-
-//        setContent {
-//            Login()
-//        }
-    }
-    fun setLatLong(lat: Double, long: Double): HotSpot {
-        return HotSpot("", lat, long)
-    }
-
-    private fun getLocation() {
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
-    }
-    override fun onLocationChanged(location: Location) {
-        tvGpsLocation = findViewById(R.id.gpsTextView)
-        tvGpsLocation.text = latitudeString + ": " + location.latitude + ", " + longitudeString + ": " + location.longitude
-        var docSaver = setLatLong(location.latitude, location.longitude)
-        viewModel.saveSpot(docSaver)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == locationPermissionCode) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
-            }
-            else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
-            }
+            takePhoto()
         }
     }
+
+    private fun hasCameraPermission() = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+    private fun hasExternalStoragePermission() = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private fun hasFineLocationPermission() = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
 
     private fun signIn() {
         val providers = arrayListOf(
@@ -134,19 +104,24 @@ class MainActivity : ComponentActivity(), LocationListener {
     }
 
     private fun takePhoto() {
-        if (hasCameraPermission() == PERMISSION_GRANTED && hasExternalStoragePermission() == PERMISSION_GRANTED) {
+        if (hasCameraPermission() == PERMISSION_GRANTED
+            && hasExternalStoragePermission() == PERMISSION_GRANTED
+            && hasFineLocationPermission() == PERMISSION_GRANTED
+        ) {
+            invokeGps()
             invokeCamera()
         } else {
-            requestMultiplePermissionsLauncher.launch(
+            requestMultipleCameraPermissionsLauncher.launch(
                 arrayOf(
                     Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.CAMERA
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.ACCESS_FINE_LOCATION
                 )
             )
         }
     }
 
-    private val requestMultiplePermissionsLauncher =
+    private val requestMultipleCameraPermissionsLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { resultsMap ->
             var permissionGranted = false
             resultsMap.forEach {
@@ -160,7 +135,11 @@ class MainActivity : ComponentActivity(), LocationListener {
             if (permissionGranted) {
                 invokeCamera()
             } else {
-                Toast.makeText(this, getString(R.string.camera_permission_denied), Toast.LENGTH_LONG)
+                Toast.makeText(
+                    this,
+                    getString(R.string.camera_permission_denied),
+                    Toast.LENGTH_LONG
+                )
                     .show()
             }
         }
@@ -200,59 +179,20 @@ class MainActivity : ComponentActivity(), LocationListener {
             }
         }
 
-    fun hasCameraPermission() = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-    fun hasExternalStoragePermission() = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-
-    @Composable
-    fun Greeting(name: String) {
-        Text(text = "Hello $name!")
+    @SuppressLint("MissingPermission")
+    private fun invokeGps() {
+        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
     }
 
-    @Composable
-    fun Login() {
-        Column() {
-            if (user == null) {
-                Row() {
-                    Button(
-                        onClick = { signIn() }
-                    ) {
-                        Text(text = "Sign in")
-                    }
-                }
-            } else {
-                Row() {
-                    Button(
-                        onClick = { }
-                    ) {
-                        Text(text = "Sign out")
-                    }
-                }
-                Photo()
-            }
-        }
-
+    override fun onLocationChanged(location: Location) {
+        tvGpsLocation = findViewById(R.id.gpsTextView)
+        tvGpsLocation.text = getString(R.string.lat_lon, location.latitude, location.longitude)
+        var docSaver = setLatLong(location.latitude, location.longitude)
+        viewModel.saveSpot(docSaver)
     }
 
-    @Composable
-    fun Photo() {
-        Column() {
-            Row() {
-                Button(
-                    onClick = {
-                        takePhoto()
-                    }
-                ) {
-                    Text(text = "Photo")
-                }
-            }
-            Row() {
-                AsyncImage(model = strUri, contentDescription = "Dog image")
-                Text(text = "Dog image")
-            }
-            Row() {
-                Text(text = "dog")
-            }
-        }
+    fun setLatLong(lat: Double, long: Double): HotSpot {
+        return HotSpot("", lat, long)
     }
-
 }

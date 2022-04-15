@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:background="@color/pupbuddy_teal"
         android:fontFamily="@font/caveat_brush"
-        android:gravity="bottom"
         android:padding="10dp"
         android:text="@string/app_name"
         android:textColor="@color/white"
