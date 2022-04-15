@@ -1,4 +1,10 @@
 <resources>
-    <string name="app_name">pupBuddyM</string>
-    <string name="cameraPermissionDenied">Unable to load camera without permission.</string>
+    <string name="app_name">PupBuddyM</string>
+    <string name="camera_permission_denied">Unable to load camera without permission.</string>
+    <string name="log_in">Log in</string>
+    <string name="log_out">Log out</string>
+    <string name="latitude">Latitude</string>
+    <string name="longitude">Longitude</string>
+    <string name="gps_location">Current GPS Location</string>
+    <string name="get_image">Capture image</string>
 </resources>

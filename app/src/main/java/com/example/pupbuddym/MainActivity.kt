@@ -16,7 +16,6 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
@@ -27,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -59,6 +57,9 @@ class MainActivity : ComponentActivity(), LocationListener {
     private var strUri by mutableStateOf("")
     val viewModel by viewModels<MainViewModel>()
 
+    var latitudeString = resources.getString(R.string.latitude)
+    var longitudeString = resources.getString(R.string.longitude)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -67,14 +68,14 @@ class MainActivity : ComponentActivity(), LocationListener {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
-        val button: Button = findViewById(R.id.getLocation)
-        button.setOnClickListener {
+        val gpsButton: Button = findViewById(R.id.getLocationButton)
+        gpsButton.setOnClickListener {
             getLocation()
         }
 
-        setContent {
-            Login()
-        }
+//        setContent {
+//            Login()
+//        }
     }
     fun setLatLong(lat: Double, long: Double): HotSpot {
         return HotSpot("", lat, long)
@@ -88,8 +89,8 @@ class MainActivity : ComponentActivity(), LocationListener {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
     }
     override fun onLocationChanged(location: Location) {
-        tvGpsLocation = findViewById(R.id.textView)
-        tvGpsLocation.text = "Latitude: " + location.latitude + " , Longitude: " + location.longitude
+        tvGpsLocation = findViewById(R.id.gpsTextView)
+        tvGpsLocation.text = latitudeString + ": " + location.latitude + ", " + longitudeString + ": " + location.longitude
         var docSaver = setLatLong(location.latitude, location.longitude)
         viewModel.saveSpot(docSaver)
     }
@@ -159,7 +160,7 @@ class MainActivity : ComponentActivity(), LocationListener {
             if (permissionGranted) {
                 invokeCamera()
             } else {
-                Toast.makeText(this, getString(R.string.cameraPermissionDenied), Toast.LENGTH_LONG)
+                Toast.makeText(this, getString(R.string.camera_permission_denied), Toast.LENGTH_LONG)
                     .show()
             }
         }
