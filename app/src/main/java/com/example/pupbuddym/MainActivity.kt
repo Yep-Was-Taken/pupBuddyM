@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity(), LocationListener {
             setLoginContent()
         }
 
-        Toast.makeText(this, "@string/success", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.success, Toast.LENGTH_SHORT).show()
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
     }
