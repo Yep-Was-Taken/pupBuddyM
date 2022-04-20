@@ -7,4 +7,5 @@
     <string name="lat_lon">Latitude: %1$f\nLongitude: %2$f</string>
     <string name="gps_location">Current GPS Location</string>
     <string name="get_image">Capture image</string>
+    <string name="captured_image">Captured image</string>
 </resources>

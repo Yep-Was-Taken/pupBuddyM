@@ -17,6 +17,7 @@ class MainViewModel : ViewModel() {
     private var _dogs: MutableLiveData<ArrayList<Dog>> = MutableLiveData<ArrayList<Dog>>()
     private lateinit var firestore : FirebaseFirestore
     private var storageReference = FirebaseStorage.getInstance().getReference()
+    val houseId: String = "6Vbyj28nCXww2GHzoxHa"
 
     init {
         firestore = FirebaseFirestore.getInstance()
@@ -25,7 +26,7 @@ class MainViewModel : ViewModel() {
     }
 
     fun saveSpot(hotSpot: HotSpot){
-        val document = firestore.collection("hotSpot").document()
+        val document = firestore.collection("Houses").document(houseId).collection("HotSpots").document()
         hotSpot.hotSpotId = document.id
         val handle = document.set(hotSpot)
         handle.addOnSuccessListener { Log.d("Firebase", "Document Saved") }
@@ -37,7 +38,7 @@ class MainViewModel : ViewModel() {
      * This will hear any updates from Firestore
      */
     private fun listenToHouses() {
-        firestore.collection("houses").addSnapshotListener {
+        firestore.collection("Houses").addSnapshotListener {
                 snapshot, e ->
             // if there is an exception we want to skip.
             if (e != null) {

@@ -14,6 +14,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -58,14 +59,21 @@ class MainActivity : ComponentActivity(), LocationListener {
     private var currentImagePath: String = ""
     private var strUri by mutableStateOf("")
     val viewModel by viewModels<MainViewModel>()
+    private lateinit var imgView: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        if (user != null) {
+            setContentView(R.layout.activity_main)
+        } else {
+            setContentView(R.layout.login)
+        }
 
         Toast.makeText(this, "We did it", Toast.LENGTH_SHORT).show();
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
+        imgView = findViewById(R.id.capturedImage)
 
         gpsButton = findViewById(R.id.getLocationButton)
         gpsButton.setOnClickListener {
@@ -98,6 +106,7 @@ class MainActivity : ComponentActivity(), LocationListener {
         val response = result.idpResponse
         if (result.resultCode == RESULT_OK) {
             user = FirebaseAuth.getInstance().currentUser
+            setContentView(R.layout.activity_main)
         } else {
             Log.e("MainActivity.kt", "Error logging in: " + response?.error?.errorCode)
         }
@@ -171,6 +180,7 @@ class MainActivity : ComponentActivity(), LocationListener {
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
                 Log.i(TAG, "Image location: $uri")
+                imgView.setImageURI(uri);
                 strUri = uri.toString()
                 val photo = Photo(localUri = uri.toString())
                 viewModel.photos.add(photo)
@@ -180,6 +190,7 @@ class MainActivity : ComponentActivity(), LocationListener {
         }
 
     @SuppressLint("MissingPermission")
+    // suppressed because invokeGps() is only called if all permissions are present
     private fun invokeGps() {
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
