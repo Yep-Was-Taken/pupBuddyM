@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Context
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.location.Location
 import android.location.LocationListener
@@ -20,18 +19,11 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import coil.compose.AsyncImage
 import com.example.pupbuddym.dto.HotSpot
 import com.example.pupbuddym.dto.Photo
 import com.example.pupbuddym.ui.main.MainViewModel
@@ -50,28 +42,41 @@ class MainActivity : ComponentActivity(), LocationListener {
 
     private lateinit var locationManager: LocationManager
     private lateinit var tvGpsLocation: TextView
-    private val locationPermissionCode = 2
     private lateinit var gpsButton: Button
+    private lateinit var loginButton: Button
 
-    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private var user: FirebaseUser? = FirebaseAuth.getInstance().currentUser
     private var uri: Uri? = null
     private var currentImagePath: String = ""
     private var strUri by mutableStateOf("")
-    val viewModel by viewModels<MainViewModel>()
+    private val viewModel by viewModels<MainViewModel>()
     private lateinit var imgView: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (user != null) {
-            setContentView(R.layout.activity_main)
+            setAppContent()
         } else {
-            setContentView(R.layout.login)
+            setLoginContent()
         }
 
-        Toast.makeText(this, "We did it", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "@string/success", Toast.LENGTH_SHORT).show()
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+    }
+
+    private fun setLoginContent() {
+        setContentView(R.layout.login)
+
+        loginButton = findViewById(R.id.loginButton)
+        loginButton.setOnClickListener {
+            signIn()
+        }
+    }
+
+    private fun setAppContent() {
+        setContentView(R.layout.activity_main)
 
         imgView = findViewById(R.id.capturedImage)
 
@@ -106,7 +111,7 @@ class MainActivity : ComponentActivity(), LocationListener {
         val response = result.idpResponse
         if (result.resultCode == RESULT_OK) {
             user = FirebaseAuth.getInstance().currentUser
-            setContentView(R.layout.activity_main)
+            setAppContent()
         } else {
             Log.e("MainActivity.kt", "Error logging in: " + response?.error?.errorCode)
         }
@@ -142,6 +147,7 @@ class MainActivity : ComponentActivity(), LocationListener {
                 }
             }
             if (permissionGranted) {
+                invokeGps()
                 invokeCamera()
             } else {
                 Toast.makeText(
@@ -154,7 +160,7 @@ class MainActivity : ComponentActivity(), LocationListener {
         }
 
     private fun invokeCamera() {
-        var file = createImageFile()
+        val file = createImageFile()
         try {
             uri = FileProvider.getUriForFile(this, "com.example.pupbuddym.fileprovider", file)
         } catch (e: Exception) {
@@ -180,7 +186,7 @@ class MainActivity : ComponentActivity(), LocationListener {
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
                 Log.i(TAG, "Image location: $uri")
-                imgView.setImageURI(uri);
+                imgView.setImageURI(uri)
                 strUri = uri.toString()
                 val photo = Photo(localUri = uri.toString())
                 viewModel.photos.add(photo)
@@ -199,11 +205,11 @@ class MainActivity : ComponentActivity(), LocationListener {
     override fun onLocationChanged(location: Location) {
         tvGpsLocation = findViewById(R.id.gpsTextView)
         tvGpsLocation.text = getString(R.string.lat_lon, location.latitude, location.longitude)
-        var docSaver = setLatLong(location.latitude, location.longitude)
+        val docSaver = setLatLong(location.latitude, location.longitude)
         viewModel.saveSpot(docSaver)
     }
 
-    fun setLatLong(lat: Double, long: Double): HotSpot {
+    private fun setLatLong(lat: Double, long: Double): HotSpot {
         return HotSpot("", lat, long)
     }
 }
